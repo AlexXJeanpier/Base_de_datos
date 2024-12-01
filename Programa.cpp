@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,8 +22,6 @@ public:
 
     virtual void anadirDatos() = 0;
     virtual void mostrar() const = 0;
-    virtual void eliminarDatos() = 0;
-    virtual void modificarDatos() = 0;
 
     virtual string toString() const = 0;
 };
@@ -41,7 +40,11 @@ public:
         : Persona(nom, ape, ed), especialidad(esp), modalidad(mod) {}
 
     string getNombre() const { return nombre; }
+    string getApellido() const { return apellido; }
+    int getEdad() const { return edad; }
     string getEspecialidad() const { return especialidad; }
+    string getModalidad() const { return modalidad; }
+
 
     //anadir datos del profesor
     void anadirDatos()
@@ -78,13 +81,39 @@ public:
              << setw(15) << modalidad << endl;
     }
 
-    void eliminarDatos() override {
-        //eliminar datos del profesor
+    void modificarNombre(const string& nuevoNombre)
+    {
+        nombre = nuevoNombre;
     }
 
-    void modificarDatos() override {
-        //modificar datos del profesor
+    void modificarApellido(const string& nuevoApellido)
+    {
+        apellido = nuevoApellido;
     }
+
+    void modificarEdad(int nuevaEdad)
+    {
+        if (nuevaEdad > 0)
+        {
+            edad = nuevaEdad;
+        }
+        else
+        {
+            cout << "La edad no puede ser negativa.\n";
+        }
+    }
+
+    void modificarEspecialidad(const string& nuevaEspecialidad)
+    {
+        especialidad = nuevaEspecialidad;
+    }
+
+    void modificarModalidad(const string& nuevaModalidad)
+    {
+        modalidad = nuevaModalidad;
+    }
+
+
 
     string toString() const override {
         return nombre + "," + apellido + "," + to_string(edad) + "," + especialidad + "," + modalidad;
@@ -104,7 +133,10 @@ public:
         : Persona(nom, ape, ed), codigo(cod), ciclo(cic) {}
 
     string getNombre() const { return nombre; }
+    string getApellido() const { return apellido; }
+    int getEdad() const { return edad; }
     string getcodigo() const { return codigo; }
+    string getciclo() const { return ciclo; }
 
     //anadir datos del estudiante
     void anadirDatos()
@@ -141,12 +173,37 @@ public:
              << setw(15) << ciclo << endl;
     }
 
-    void eliminarDatos() override {
-        //eliminar datos del estudiante
+    void modificarNombre(const string& nuevoNombre)
+    {
+        nombre = nuevoNombre;
     }
 
-    void modificarDatos() override {
-        //modificar datos del estudiante
+    void modificarApellido(const string& nuevoApellido)
+    {
+        apellido = nuevoApellido;
+    }
+
+    void modificarEdad(int nuevaEdad)
+    {
+        if (nuevaEdad > 0)
+        {
+            edad = nuevaEdad;
+        }
+        else
+        {
+            cout << "La edad no puede ser negativa.\n";
+        }
+    }
+    
+
+    void modificarCodigo(const string& nuevoCodigo)
+    {
+        codigo = nuevoCodigo;
+    }
+
+    void modificarCiclo(const string& nuevoCiclo)
+    {
+        ciclo = nuevoCiclo;
     }
 
     string toString() const override {
@@ -430,15 +487,266 @@ void BusquedaBinariaProfesoresEspecialidad(vector<Profesor>& profesores, int low
     }
 }
 
-void EliminarProfesores(vector<Profesor>& profesores)
+void EliminarProfesores(vector<Profesor>& profesores, string nombre)
 {
+    bool encontrado = false;
+
+    for (auto it = profesores.begin(); it != profesores.end(); it++)
+    {
+        if (it->getNombre() == nombre)
+        {
+            it = profesores.erase(it);
+            encontrado = true;
+            break;
+        }
+    }
+
+    //Actualizar el archivo con los datos del profesor eliminado
+    ofstream archivo("profesores.txt", ios::trunc);
+    if (archivo.is_open())
+    {
+        for (const auto& profesor : profesores)
+        {
+            archivo << profesor.toString() << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cerr << "Error al abrir el archivo para escribir datos del profesor.\n";
+    }
+}
+
+void EliminarEstudiantes(vector<Estudiante>& estudiantes, string nombre)
+{
+    bool encontrado = false;
+    for (auto it = estudiantes.begin(); it != estudiantes.end(); it++)
+    {
+        if (it->getNombre() == nombre)
+        {
+            it = estudiantes.erase(it);
+            encontrado = true;
+            break;
+        }
+    }
+
+    //Actualizar el archivo con los datos del estudiante eliminado
+    ofstream archivo("estudiantes.txt", ios::trunc);
+    if (archivo.is_open())
+    {
+        for (const auto& estudiante : estudiantes)
+        {
+            archivo << estudiante.toString() << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cerr << "Error al abrir el archivo para escribir datos del estudiante.\n";
+    }
+}
+
+void ModificarProfesores(vector<Profesor>& profesores, const std::string& nombreArchivo)
+{
+    string nombreBuscado;
+    cout << "Ingrese el nombre del profesor a modificar: ";
+    cin >> nombreBuscado;
     
+    auto it = find_if(profesores.begin(), profesores.end(), [&nombreBuscado](const Profesor& profesor) { return profesor.getNombre() == nombreBuscado; });
+
+    if (it == profesores.end())
+    {
+        cerr << "No se encontro ningun profesor con ese nombre.\n";
+        return;
+    }
+    
+    Profesor& profesor = *it;
+
+    int opcion;
+    do 
+    {
+        cout << " Atributo a modificar:\n";
+        cout << " 1. Nombre\n";
+        cout << " 2. Apellido\n";
+        cout << " 3. Edad\n";
+        cout << " 4. Especialidad\n";
+        cout << " 5. Modalidad\n";
+        cout << " 0. Salir\n";
+        cout << "================================================================================\n";
+        cout << " Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion)
+        {
+            case 1:
+            {
+                string nuevoNombre;
+                cout << "Ingrese el nuevo nombre: ";
+                cin >> nuevoNombre;
+                profesor.modificarNombre(nuevoNombre);
+                break;
+            }  
+                break;
+            case 2:
+            {
+                string nuevoApellido;
+                cout << "Ingrese el nuevo apellido: ";
+                cin >> nuevoApellido;
+                profesor.modificarApellido(nuevoApellido);
+                break;
+            }
+                break;
+            case 3:
+            {
+                int nuevaEdad;
+                cout << "Ingrese la nueva edad: ";
+                cin >> nuevaEdad;
+                profesor.modificarEdad(nuevaEdad);
+                break;
+            }
+            case 4:
+            {
+                string nuevaEspecialidad;
+                cout << "Ingrese la nueva especialidad: ";
+                cin >> nuevaEspecialidad;
+                profesor.modificarEspecialidad(nuevaEspecialidad);
+                break;
+            }
+                break;
+            case 5:
+            {
+                string nuevaModalidad;
+                cout << "Ingrese la nueva modalidad: ";
+                cin >> nuevaModalidad;
+                profesor.modificarModalidad(nuevaModalidad);
+                break;
+            }
+                break;
+            case 0:
+                cout << "Volviendo al menú principal.\n";
+                break;
+            default:
+                cout << "<<< Opcion no valida >>>\n";
+                break;
+        }
+    } while (opcion != 0);
+
+    //Actualizar el archivo con los datos del profesor modificado
+    ofstream archivo("profesores.txt", ios::trunc);
+    if (archivo.is_open())
+    {
+        for (const auto& profesor : profesores)
+        {
+            archivo << profesor.toString() << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cerr << "Error al abrir el archivo para escribir datos del profesor.\n";
+    }
 }
 
-void EliminarEstudiantes(vector<Estudiante>& estudiantes)
+void ModificarEstudiantes(vector<Estudiante>& estudiantes, const std::string& nombreArchivo)
 {
+    string nombreBuscado;
+    cout << "Ingrese el nombre del estudiante a modificar: ";
+    cin >> nombreBuscado;
 
+    auto it = find_if(estudiantes.begin(), estudiantes.end(), [&nombreBuscado](const Estudiante& estudiante) { return estudiante.getNombre() == nombreBuscado; });
+
+    if (it == estudiantes.end())
+    {
+        cerr << "No se encontro ningun estudiante con ese nombre.\n";
+        return;
+    }
+
+    Estudiante& estudiante = *it;
+
+    int opcion;
+    do
+    {
+        cout << " Atributo a modificar:\n";
+        cout << " 1. Nombre\n";
+        cout << " 2. Apellido\n";
+        cout << " 3. Edad\n";
+        cout << " 4. Codigo\n";
+        cout << " 5. Ciclo\n";
+        cout << " 0. Salir\n";
+        cout << "================================================================================\n";
+        cout << " Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion)
+        {
+            case 1:
+            {
+                string nuevoNombre;
+                cout << "Ingrese el nuevo nombre: ";
+                cin >> nuevoNombre;
+                estudiante.modificarNombre(nuevoNombre);
+                break;
+            }
+                break;
+            case 2:
+            {
+                string nuevoApellido;
+                cout << "Ingrese el nuevo apellido: ";
+                cin >> nuevoApellido;
+                estudiante.modificarApellido(nuevoApellido);
+                break;
+            }
+                break;
+            case 3:
+                int nuevaEdad;
+                cout << "Ingrese la nueva edad: ";
+                cin >> nuevaEdad;
+                estudiante.modificarEdad(nuevaEdad);
+                break;
+            case 4:
+            {
+                string nuevoCodigo;
+                cout << "Ingrese el nuevo codigo: ";
+                cin >> nuevoCodigo;
+                estudiante.modificarCodigo(nuevoCodigo);
+                break;
+            }
+                break;
+            case 5:
+            {
+                string nuevoCiclo;
+                cout << "Ingrese el nuevo ciclo: ";
+                cin >> nuevoCiclo;
+                estudiante.modificarCiclo(nuevoCiclo);
+                break;
+            }
+                break;
+            case 0:
+                cout << "Volviendo al menú principal.\n";
+                break;
+            default:
+                cout << "<<< Opcion no valida >>>\n";
+                break;
+        }
+    } while (opcion != 0);
+
+    //Actualizar el archivo con los datos del estudiante modificado
+    ofstream archivo("estudiantes.txt", ios::trunc);
+    if (archivo.is_open())
+    {
+        for (const auto& estudiante : estudiantes)
+        {
+            archivo << estudiante.toString() << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cerr << "Error al abrir el archivo para escribir datos del estudiante.\n";
+    }
 }
+
+
 int main() {
     vector<Profesor> profesores;
     vector<Estudiante> estudiantes;
@@ -494,7 +802,8 @@ int main() {
                 cout << " Seleccione una opcion: ";
                 cin >> opcion;
 
-                switch (opcion) {
+                switch (opcion) 
+                {
                 case 1:
                     mostrarDatosProfesores(profesores);
                     break;
@@ -544,18 +853,55 @@ int main() {
                 switch (opcion) 
                 {
                     case 1:
-                        EliminarProfesores(profesores);
+                    {
+                        cout << "Eliminar Profesores\n";
+                        cout << "=================\n";
+                        cout << "Ingrese el nombre del profesor a eliminar: ";
+                        string nombre;
+                        cin >> nombre;
+                        EliminarProfesores(profesores, nombre);
+                        break;
+                    }
                         break;
                     case 2:
-                        EliminarEstudiantes(estudiantes);
+                    {
+                        cout << "Eliminar Estudiantes\n";
+                        cout << "=================\n";
+                        cout << "Ingrese el nombre del estudiante a eliminar: ";
+                        string nombre;
+                        cin >> nombre;
+                        EliminarEstudiantes(estudiantes, nombre);
+                        break;
+                    }
                         break;
                     default:
                         cout << "<<< Opcion no valida >>>\n";
                         break;
                 }
                 break;
+            // Modificar datos
             case 5:
-                // Modificar datos
+            {
+                cout << "================================= MODIFICAR DATOS ===============================\n";
+                cout << " 1. Profesores\n";
+                cout << " 2. Estudiantes\n";
+                cout << "================================================================================\n";
+                cout << " Seleccione una opcion: ";
+                cin >> opcion;
+
+                switch (opcion)
+                {
+                    case 1:
+                        ModificarProfesores(profesores, "profesores.txt");
+                        break;
+                    case 2:
+                        ModificarEstudiantes(estudiantes, "estudiantes.txt");
+                        break;
+                    default:
+                        cout << "<<< Opcion no valida >>>\n";
+                        break;
+                }
+            }
                 break;
             // Buscar datos
             case 6:
