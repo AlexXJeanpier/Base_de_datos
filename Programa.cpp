@@ -23,7 +23,6 @@ public:
     virtual void mostrar() const = 0;
     virtual void eliminarDatos() = 0;
     virtual void modificarDatos() = 0;
-    virtual void buscarDatos() = 0;
 
     virtual string toString() const = 0;
 };
@@ -40,7 +39,10 @@ public:
     Profesor() : Persona(), especialidad(""), modalidad("") {}
     Profesor(string nom, string ape, int ed, string esp, string mod)
         : Persona(nom, ape, ed), especialidad(esp), modalidad(mod) {}
-    
+
+    string getNombre() const { return nombre; }
+    string getEspecialidad() const { return especialidad; }
+
     //anadir datos del profesor
     void anadirDatos()
     {
@@ -84,10 +86,6 @@ public:
         //modificar datos del profesor
     }
 
-    void buscarDatos() override {
-        //buscar datos del profesor
-    }
-
     string toString() const override {
         return nombre + "," + apellido + "," + to_string(edad) + "," + especialidad + "," + modalidad;
     }
@@ -104,6 +102,9 @@ public:
     Estudiante() : Persona(), codigo(""), ciclo("") {}
     Estudiante(string nom, string ape, int ed, string cod, string cic)
         : Persona(nom, ape, ed), codigo(cod), ciclo(cic) {}
+
+    string getNombre() const { return nombre; }
+    string getcodigo() const { return codigo; }
 
     //anadir datos del estudiante
     void anadirDatos()
@@ -146,10 +147,6 @@ public:
 
     void modificarDatos() override {
         //modificar datos del estudiante
-    }
-
-    void buscarDatos() override {
-        //buscar datos del estudiante
     }
 
     string toString() const override {
@@ -333,6 +330,115 @@ int PartitionEstudiantes(vector<Estudiante>& estudiantes, int low, int high)
     return i + 1;
 }
 
+void BusquedaBinariaEstudiantesNombre(vector<Estudiante>& estudiantes, int low, int high, string nombre)
+{
+    if (low > high)
+    {
+        cout << "\nNo se encontro ningun estudiante con ese nombre.\n";
+        return;
+    }
+
+    int mid = (low + high) / 2;
+    if (estudiantes[mid].getNombre() == nombre)
+    {
+        cout << "\nEstudiante encontrado!\n";
+        estudiantes[mid].mostrar();
+        return;
+    }
+    else if (nombre < estudiantes[mid].getNombre())
+    {
+        BusquedaBinariaEstudiantesNombre(estudiantes, low, mid - 1, nombre);
+    }
+    else
+    {
+        BusquedaBinariaEstudiantesNombre(estudiantes, mid + 1, high, nombre);
+    }
+    
+}
+void BusquedaBInariaProfesoresNombre(vector<Profesor>& profesores, int low, int high, string nombre)
+{
+    if (low > high)
+    {
+        cout << "\nNo se encontro ningun profesor con ese nombre.\n";
+        return;
+    }
+
+    int mid = (low + high) / 2;
+    if (profesores[mid].getNombre() == nombre)
+    {
+        cout << "\nProfesor encontrado!\n";
+        profesores[mid].mostrar();
+        return;
+    }
+    else if (nombre < profesores[mid].getNombre())
+    {
+        BusquedaBInariaProfesoresNombre(profesores, low, mid - 1, nombre);
+    }
+    else
+    {
+        BusquedaBInariaProfesoresNombre(profesores, mid + 1, high, nombre);
+    }
+}
+
+void BusquedaBinariaEstudiantesCodigo(vector<Estudiante>& estudiantes, int low, int high, string codigo)
+{
+    if (low > high)
+    {
+        cout << "\nNo se encontro ningun estudiante con ese codigo.\n";
+        return;
+    }
+
+    int mid = (low + high) / 2;
+    if (estudiantes[mid].getcodigo() == codigo)
+    {
+        cout << "\nEstudiante encontrado!\n";
+        estudiantes[mid].mostrar();
+        return;
+    }
+    else if (codigo < estudiantes[mid].getcodigo())
+    {
+        BusquedaBinariaEstudiantesCodigo(estudiantes, low, mid - 1, codigo);
+    }
+    else
+    {
+        BusquedaBinariaEstudiantesCodigo(estudiantes, mid + 1, high, codigo);
+    }
+}
+
+void BusquedaBinariaProfesoresEspecialidad(vector<Profesor>& profesores, int low, int high, string especialidad)
+{
+    if (low > high)
+    {
+        cout << "\nNo se encontro ningun profesor con esa especialidad.\n";
+        return;
+    }
+
+    int mid = (low + high) / 2;
+    if (profesores[mid].getEspecialidad() == especialidad)
+    {
+        cout << "\nProfesor encontrado!\n";
+        profesores[mid].mostrar();
+        return;
+    }
+    else if (especialidad < profesores[mid].getEspecialidad())
+    {
+        BusquedaBinariaProfesoresEspecialidad(profesores, low, mid - 1, especialidad);
+    }
+    else
+    {
+        BusquedaBinariaProfesoresEspecialidad(profesores, mid + 1, high, especialidad);
+    }
+}
+
+void EliminarProfesores(vector<Profesor>& profesores)
+{
+    
+}
+
+void EliminarEstudiantes(vector<Estudiante>& estudiantes)
+{
+
+}
 int main() {
     vector<Profesor> profesores;
     vector<Estudiante> estudiantes;
@@ -426,8 +532,27 @@ int main() {
                     break;
             }
                 break;
+            // Eliminar datos
             case 4:
-                // Eliminar datos
+                cout << "================================= ELIMINAR DATOS ===============================\n";
+                cout << " 1. Profesores\n";
+                cout << " 2. Estudiantes\n";
+                cout << "================================================================================\n";
+                cout << " Seleccione una opcion: ";
+                cin >> opcion;
+
+                switch (opcion) 
+                {
+                    case 1:
+                        EliminarProfesores(profesores);
+                        break;
+                    case 2:
+                        EliminarEstudiantes(estudiantes);
+                        break;
+                    default:
+                        cout << "<<< Opcion no valida >>>\n";
+                        break;
+                }
                 break;
             case 5:
                 // Modificar datos
@@ -446,8 +571,7 @@ int main() {
                     case 1:
                         cout << "=============================== BUSCAR PROFESORES ===============================\n";
                         cout << " 1. Buscar por Nombre\n";
-                        cout << " 2. Buscar por Apellido\n";
-                        cout << " 3. Buscar especialidad\n";
+                        cout << " 2. Buscar por Especialidad\n";
                         cout << "================================================================================\n";
                         cout << " Seleccione una opcion: ";
                         cin >> opcion;
@@ -455,10 +579,22 @@ int main() {
                         switch (opcion)
                         {
                             case 1:
+                            {
+                                string nombre;
+                                cout << "=============================== BUSCAR POR NOMBRE ===============================\n";
+                                cout << " Nombre: ";
+                                cin >> nombre;
+                                BusquedaBInariaProfesoresNombre(profesores, 0, profesores.size() - 1, nombre);
+                            }
                                 break;
                             case 2:
-                                break;
-                            case 3:
+                            {
+                                string especialidad;
+                                cout << "=============================== BUSCAR POR ESPECIALIDAD ===============================\n";
+                                cout << " Especialidad: ";
+                                cin >> especialidad;
+                                BusquedaBinariaProfesoresEspecialidad(profesores, 0, profesores.size() - 1, especialidad);
+                            }
                                 break;
                             default:
                                 cout << "<<< Opcion no valida >>>\n";
@@ -468,8 +604,7 @@ int main() {
                     case 2:
                         cout << "=============================== BUSCAR ESTUDIANTES ===============================\n";
                         cout << " 1. Buscar por Nombre\n";
-                        cout << " 2. Buscar por Apellido\n";
-                        cout << " 3. Buscar codigo\n";
+                        cout << " 2. Buscar por Codigo\n";
                         cout << "================================================================================\n";
                         cout << " Seleccione una opcion: ";
                         cin >> opcion;
@@ -477,10 +612,22 @@ int main() {
                         switch (opcion)
                         {
                             case 1:
+                            {
+                                string nombre;
+                                cout << "=============================== BUSCAR POR NOMBRE ===============================\n";
+                                cout << " Nombre: ";
+                                cin >> nombre;                                
+                                BusquedaBinariaEstudiantesNombre(estudiantes, 0, estudiantes.size() - 1, nombre);
+                            }
                                 break;
                             case 2:
-                                break;
-                            case 3:
+                            {
+                                string codigo;
+                                cout << "=============================== BUSCAR POR CODIGO ===============================\n";
+                                cout << " Codigo: ";
+                                cin >> codigo;
+                                BusquedaBinariaEstudiantesCodigo(estudiantes, 0, estudiantes.size() - 1, codigo);
+                            }
                                 break;
                             default:
                                 cout << "<<< Opcion no valida >>>\n";
